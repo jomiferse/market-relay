@@ -1,0 +1,477 @@
+{
+  "$comment": "Reproducible fixture for the source-viability decision matrix (openspec/changes/build-market-data-hub/tasks.md 3.2-3.4). Contains no credentials: 'evidence' is always a public URL consulted during the review. The 'capabilities' values use the same names as market_relay.domain.governance.models.PolicyCapability. This fixture is documentary: no source listed here (other than 'fake', outside this file) SHALL appear in Settings.enabled_sources or have an APPROVED SourcePolicyDecision seeded by code; a documentary GO decision enables future implementation work, not immediate access.",
+  "review_date": "2026-09-02",
+  "next_recommended_review": "2027-03-02",
+  "reviewer": "market-relay-eng (wave 2 openspec build-market-data-hub)",
+  "sources": [
+    {
+      "source_id": "openfigi",
+      "category": "identity",
+      "intended_role": "Strictly FIGI-only identity resolution (the FIGI identifier itself) for instrument-catalog.DiscoveryPort. Does NOT cover the descriptive metadata the API also returns (Related Security Descriptions: name, ticker, exchCode, marketSector, securityType), which remain UNRESOLVED and out of scope for this GO.",
+      "global_status": "GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/api/documentation",
+          "note": "Public, free mapping API with no monthly limit; 25 req/min without a key, 25 req/6s with a free key. Technical retrieval covers the whole response (FIGI and Related Security Descriptions), but permission to retrieve does not imply permission to store/redistribute every field — see STORE/REDISTRIBUTE."
+        },
+        "STORE": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/docs/terms-of-service",
+          "note": "ToS §1 ('Public Domain Dedication') is a public-domain dedication over the FIGI Identifier: 'Bloomberg ... hereby dedicates FIGI Identifiers to the public domain'. It covers exclusively the FIGI Identifier itself; it does not extend to the 'Related Security Descriptions' (name, ticker, exchCode, marketSector, securityType), which §3 mentions only in the disclaimer clause ('AS IS', no warranties), not in a grant of storage rights."
+        },
+        "DISPLAY": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/docs/terms-of-service",
+          "note": "§1: 'you are free ... to use, display, reproduce, distribute and create derivative works from the FIGI Identifiers'. This applies verbatim only to 'the FIGI Identifiers', not to the Related Security Descriptions."
+        },
+        "REDISTRIBUTE": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/docs/terms-of-service",
+          "note": "§1, same sentence: '... including redistribution of the FIGI Identifiers to your customers for their use'. The grammatical subject is 'the FIGI Identifiers'; there is no equivalent clause for the Related Security Descriptions (ticker, exchCode, marketSector, securityType, name), which appear only in the §3 disclaimer. Third-party ISIN/CUSIP/SEDOL are also not returned by the API and fall outside this scope."
+        },
+        "ATTRIBUTE": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/docs/terms-of-service",
+          "note": "No mandatory attribution is required for the FIGI Identifier; citing 'OpenFIGI' is nonetheless recommended as good practice."
+        },
+        "RETAIN": {
+          "status": "GO",
+          "evidence": "https://www.openfigi.com/docs/terms-of-service",
+          "note": "The ToS does not set a maximum retention period for the FIGI Identifier itself; not evaluated for the Related Security Descriptions, which fall outside this GO."
+        }
+      },
+      "scope_limitation": "The GO covers strictly and exclusively the FIGI identifier (FIGI Identifier), covered by the public-domain dedication in ToS §1, including its explicit redistribution-to-customers clause. It does NOT cover the non-proprietary descriptive fields also returned by the mapping API (security name, ticker, exchCode, marketSector, securityType — 'Related Security Descriptions'): these appear only in the §3 disclaimer clause ('AS IS', no warranties), not in an unambiguous grant of storage/redistribution rights, so their status remains UNRESOLVED and no adapter SHALL persist or redistribute them until that gap is expressly resolved (e.g. a written inquiry to Bloomberg/OpenFIGI). It also does not cover third-party ISIN/CUSIP/SEDOL, which OpenFIGI does not redistribute (the API does not even return them). Allowlist of fields authorized by this GO: 'figi' only.",
+      "next_step": "Implementing a strictly FIGI-only adapter/projection (which discards or never persists/redistributes ticker/name/exchCode/marketSector/securityType) and registering the corresponding APPROVED SourcePolicyDecision falls outside this documentary wave (tasks.md section 3); it requires a subsequent explicit implementation task plus operational review before enabling 'openfigi' in enabled_sources. Resolve separately, and in writing with Bloomberg/OpenFIGI if needed, the UNRESOLVED status of the Related Security Descriptions before storing or redistributing those fields."
+    },
+    {
+      "source_id": "deutsche_boerse_public_dataset",
+      "category": "xetra_equity_etf_prices",
+      "intended_role": "EOD history for Xetra/Eurex listings (equities, UCITS ETFs listed on XETR)",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://registry.opendata.aws/deutsche-boerse-pds/",
+          "note": "Public dataset on AWS S3, 1-minute aggregates of Xetra/Eurex, technical access with no authentication."
+        },
+        "STORE": {
+          "status": "NO-GO",
+          "evidence": "https://registry.opendata.aws/deutsche-boerse-pds/",
+          "note": "Licensed under Non-Commercial (NC) terms: 'copy, distribute, display, and perform the work ... only for non-commercial purposes'. MarketRelay stores data in order to republish it to Holdria, which is a commercial use."
+        },
+        "DISPLAY": {
+          "status": "NO-GO",
+          "evidence": "https://registry.opendata.aws/deutsche-boerse-pds/",
+          "note": "Same NC restriction as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://www.mds.deutsche-boerse.com/resource/blob/3134034/dac167f9f376e95323f12c42db14e173/data/Market-Data-Policy-Guidelines-and-FAQ_V2_2.pdf",
+          "note": "Any use other than trading/clearing on the market itself requires a paid MDDA license; the open dataset is NC and does not cover commercial redistribution to a third party such as Holdria."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://registry.opendata.aws/deutsche-boerse-pds/",
+          "note": "The full text of the referenced Creative Commons NC license was not reviewed to confirm the exact attribution clause."
+        },
+        "RETAIN": {
+          "status": "NO-GO",
+          "evidence": "https://registry.opendata.aws/deutsche-boerse-pds/",
+          "note": "Retention for commercial republication purposes falls under the same NC restriction as STORE."
+        }
+      },
+      "next_step": "Remains disabled. Reconsider only if Deutsche Börse Group offers an explicit commercial license (MDDA) for this use."
+    },
+    {
+      "source_id": "euronext_eod_datashop",
+      "category": "euronext_equity_etf_prices",
+      "intended_role": "EOD history for Euronext listings (equities, UCITS ETFs listed on XPAR/XAMS/XBRU/XLIS)",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.euronext.com/en/data/end-day-index-data",
+          "note": "The published free access is described for 'internal use'; there is no public evidence that it covers automated retrieval for a third-party service."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://connect2.euronext.com/sites/default/files/documentation/data/For%20Publication%20-%20EMDA%20General%20Terms%20and%20Conditions%20and%20Policies%20(effective%206%20June%202022).pdf",
+          "note": "Storage and commercial use are governed by the Euronext Market Data Agreement (EMDA); MarketRelay does not have a signed EMDA."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.euronext.com/en/data/pricing-specs-agreements/data-agreements-types",
+          "note": "Same condition: requires an EMDA agreement for any use other than non-commercial internal use."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://www.euronext.com/en/data/pricing-specs-agreements/data-agreements-types",
+          "note": "Redistribution to a third party (Holdria) explicitly requires an EMDA; without a signed agreement, redistribution is not permitted."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://connect2.euronext.com/sites/default/files/documentation/data/For%20Publication%20-%20EMDA%20General%20Terms%20and%20Conditions%20and%20Policies%20(effective%206%20June%202022).pdf",
+          "note": "Not reviewed in detail without an active reference EMDA."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://connect2.euronext.com/sites/default/files/documentation/data/For%20Publication%20-%20EMDA%20General%20Terms%20and%20Conditions%20and%20Policies%20(effective%206%20June%202022).pdf",
+          "note": "Retention periods depend on the EMDA; not evaluable without a signed agreement."
+        }
+      },
+      "next_step": "Remains disabled. Contact databyeuronext@euronext.com to negotiate an EMDA if the volume of Euronext instruments justifies it."
+    },
+    {
+      "source_id": "alpha_vantage_free",
+      "category": "multi_asset_prices",
+      "intended_role": "EOD equity/ETF history as a generic multi-market candidate",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "Free API key with a documented limit (historically 25 requests/day on the free tier)."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "The ToS text was not reviewed line by line for the free tier; secondary sources indicate that commercial use and redistribution require separate onboarding and licensing."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "Same reason as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "Commercial redistribution and exchange-licensed data require separate onboarding and a commercial contract; the free tier does not grant it."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "Not confirmed in the text reviewed."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.alphavantage.co/terms_of_service/",
+          "note": "Not confirmed in the text reviewed."
+        }
+      },
+      "next_step": "Remains disabled while no explicit commercial redistribution license exists."
+    },
+    {
+      "source_id": "twelvedata_free",
+      "category": "multi_asset_prices",
+      "intended_role": "EOD equity/ETF/crypto history as a generic multi-market candidate",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://twelvedata.com/terms",
+          "note": "Documented free plan: 8 calls/minute, 800/day, covers mainly U.S. equities, forex, and crypto."
+        },
+        "STORE": {
+          "status": "GO",
+          "evidence": "https://twelvedata.com/terms",
+          "note": "Limited license to access, receive, process, and store data 'solely for internal use'."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage",
+          "note": "Displaying to third parties requires the appropriate subscription tier or a redistribution add-on; not confirmed whether the free plan covers this for an external consumer such as Holdria."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://support.twelvedata.com/en/articles/5332349-commercial-and-personal-usage",
+          "note": "Redistribution requires a specific add-on or a Venture (business) plan or higher; the free plan does not include it."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://twelvedata.com/terms",
+          "note": "Not confirmed in the text reviewed."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://twelvedata.com/terms",
+          "note": "Not confirmed in the text reviewed."
+        }
+      },
+      "next_step": "Remains disabled while the intended use (republishing to Holdria) does not have the redistribution add-on or plan."
+    },
+    {
+      "source_id": "coingecko_free_demo",
+      "category": "crypto_eur_prices",
+      "intended_role": "EOD history for crypto/EUR pairs",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "Documented public/demo API with published rate and monthly call limits on the pricing page."
+        },
+        "STORE": {
+          "status": "GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "Caching data is permitted, refreshing the cache at least every 24 hours and applying strong encryption."
+        },
+        "DISPLAY": {
+          "status": "GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "Use and display permitted with 'Powered by CoinGecko' attribution."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "'You are not permitted to sell, rent, lease, sub-license, re-distribute or syndicate access to the CoinGecko API or part thereof' without a separate Enterprise agreement."
+        },
+        "ATTRIBUTE": {
+          "status": "GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "Mandatory attribution: 'Powered by CoinGecko' with hyperlink, minimum 10pt font size."
+        },
+        "RETAIN": {
+          "status": "NO-GO",
+          "evidence": "https://www.coingecko.com/en/api_terms",
+          "note": "Stored data must be deleted at the end of the agreement and the cache must be refreshed every 24h; there is no free long-term retention."
+        }
+      },
+      "next_step": "Remains disabled; republishing to Holdria constitutes redistribution not permitted on the free/demo tier."
+    },
+    {
+      "source_id": "kraken_public_rest_api",
+      "category": "crypto_eur_prices",
+      "intended_role": "OHLC history for crypto/EUR pairs traded on Kraken",
+      "global_status": "UNRESOLVED",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "The general terms prohibit 'web scraping, web harvesting, or data extraction methods'; no explicit exception was found for use of the public market endpoints (OHLC/Ticker) documented at docs.kraken.com/api."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "Not evaluated for lack of a separately located public API policy."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "Same reason as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "No published evidence explicitly authorizing commercial redistribution of market data to a third party."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "Not confirmed."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.kraken.com/legal/global-terms",
+          "note": "Not confirmed."
+        }
+      },
+      "next_step": "Remains disabled. Request written clarification from Kraken on whether the general scraping terms apply to the public market endpoints documented at docs.kraken.com before reconsidering."
+    },
+    {
+      "source_id": "bitstamp_public_rest_api",
+      "category": "crypto_eur_prices",
+      "intended_role": "OHLC history for crypto/EUR pairs traded on Bitstamp",
+      "global_status": "UNRESOLVED",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "GO",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "Documented public market endpoints, no authentication, with an advisory rate limit."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "No public clause was found covering long-term storage without a commercial agreement."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "Not confirmed without the Data License Agreement."
+        },
+        "REDISTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "Bitstamp requires contacting partners@bitstamp.net and signing a commercial-use Data License Agreement to onboard or redistribute its data for commercial purposes; MarketRelay does not have that agreement signed."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "Would depend on the terms of the Data License Agreement, not evaluable without signing it."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.bitstamp.net/api/",
+          "note": "Same as ATTRIBUTE."
+        }
+      },
+      "next_step": "Remains disabled until, if applicable, Bitstamp's commercial Data License Agreement is signed."
+    },
+    {
+      "source_id": "scraping_investing_com",
+      "category": "multi_asset_scraping",
+      "intended_role": "Scraping candidate for equities, ETFs, funds, and crypto",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "The terms explicitly prohibit 'employing any automated system or software to extract data or content'. Extracting data already violates the retrieval term, before even considering storage or redistribution."
+        },
+        "STORE": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "'It is prohibited to use, store, reproduce, display, modify, transmit or distribute the data ... without the explicit prior written permission of Fusion Media and/or the data provider.'"
+        },
+        "DISPLAY": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "Same clause as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "Same clause as STORE."
+        },
+        "ATTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "Not applicable: the underlying use is already prohibited."
+        },
+        "RETAIN": {
+          "status": "NO-GO",
+          "evidence": "https://cdn.investing.com/about-us/terms_and_conditions.pdf",
+          "note": "Not applicable: the underlying use is already prohibited."
+        }
+      },
+      "next_step": "Permanently discarded absent explicit written permission from Fusion Media, highly unlikely given the company's public track record enforcing this clause."
+    },
+    {
+      "source_id": "scraping_stooq",
+      "category": "multi_asset_scraping",
+      "intended_role": "Scraping/CSV-download candidate for equities, ETFs, and crypto",
+      "global_status": "NO-GO",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "robots.txt denies '/' to every user agent except Googlebot and Bingbot; no alternative terms of use were published authorizing automated retrieval by other agents. Technically possible access to the CSV-download URLs does not amount to authorization."
+        },
+        "STORE": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "Without authorized retrieval, storage is not authorized either."
+        },
+        "DISPLAY": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "Same reason."
+        },
+        "REDISTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "Same reason."
+        },
+        "ATTRIBUTE": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "Not applicable: the underlying use is already prohibited."
+        },
+        "RETAIN": {
+          "status": "NO-GO",
+          "evidence": "https://stooq.com/robots.txt",
+          "note": "Not applicable: the underlying use is already prohibited."
+        }
+      },
+      "next_step": "Discarded while robots.txt denies general access and no published terms of use explicitly contradict that for automated third-party use."
+    },
+    {
+      "source_id": "scraping_justetf",
+      "category": "etf_fund_scraping",
+      "intended_role": "Scraping candidate for UCITS ETF fact sheets (NAV, ISIN, TER)",
+      "global_status": "UNRESOLVED",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/robots.txt",
+          "note": "robots.txt only denies specific paths (/servlet/, /link/, search/watchlist parameters with _wicket); it does not deny the ETF fact-sheet pages. This is only a technical signal, not a permission: the full text of the general terms and conditions (PDF at justetf.com/documents) confirming whether automated third-party use is allowed was not located."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/documents/justETF_general_terms_and_conditions.pdf",
+          "note": "Document located but not reviewed line by line in this wave; no third-party storage authorization is confirmed."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/documents/justETF_general_terms_and_conditions.pdf",
+          "note": "Same reason as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/documents/justETF_general_terms_and_conditions.pdf",
+          "note": "Same reason as STORE."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/documents/justETF_general_terms_and_conditions.pdf",
+          "note": "Not confirmed."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.justetf.com/documents/justETF_general_terms_and_conditions.pdf",
+          "note": "Not confirmed."
+        }
+      },
+      "next_step": "Disabled until the general terms and conditions published in the linked PDF are reviewed in full and, if needed, justETF GmbH is consulted in writing."
+    },
+    {
+      "source_id": "scraping_boerse_frankfurt",
+      "category": "equity_etf_fund_scraping",
+      "intended_role": "Scraping candidate for Xetra/Börse Frankfurt instrument fact sheets",
+      "global_status": "UNRESOLVED",
+      "capabilities": {
+        "RETRIEVE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/robots.txt",
+          "note": "The domain redirects to live.deutsche-boerse.com; the observed robots.txt only references a sitemap with no clear deny rules for the instrument fact-sheet pages, but no terms of use ('Nutzungsbedingungen') explicitly authorizing automated third-party use were located."
+        },
+        "STORE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/",
+          "note": "No specific terms of use were located for data extracted from the site (distinct from the AWS Public Dataset, already evaluated separately)."
+        },
+        "DISPLAY": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/",
+          "note": "Same reason as STORE."
+        },
+        "REDISTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/",
+          "note": "Same reason as STORE."
+        },
+        "ATTRIBUTE": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/",
+          "note": "Not confirmed."
+        },
+        "RETAIN": {
+          "status": "UNRESOLVED",
+          "evidence": "https://www.boerse-frankfurt.de/",
+          "note": "Not confirmed."
+        }
+      },
+      "next_step": "Disabled until the site's general terms of use are located and reviewed and, if needed, Deutsche Börse AG is consulted in writing."
+    }
+  ]
+}

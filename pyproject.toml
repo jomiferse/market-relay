@@ -1,0 +1,84 @@
+[project]
+name = "market-relay"
+version = "0.1.0"
+description = "MarketRelay: instrument catalog, source governance, and EOD price ingestion for Holdria."
+readme = "README.md"
+authors = [
+    { name = "jomiferse", email = "jomiferse@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.19.1",
+    "fastapi>=0.141.1",
+    "psycopg[binary]>=3.3.5",
+    "pydantic>=2",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2",
+    "uvicorn[standard]>=0.52.4",
+]
+
+[project.scripts]
+market-relay-api = "market_relay.entrypoints.api:run"
+market-relay-scheduler = "market_relay.entrypoints.scheduler:run"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "freezegun>=1.5.5",
+    "httpx>=0.28.1",
+    "jsonschema>=4.26.0",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.5",
+    "types-jsonschema>=4.26.0.20260518",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+"src/market_relay/db/migrations/versions/*" = ["E501"]
+
+# `Depends(...)`/`Query(...)` in default values is FastAPI's dependency
+# injection idiom (tasks.md 5.1): B008 flags them by default because a call
+# in a default value is normally evaluated once, unexpectedly, but FastAPI
+# relies on exactly that to resolve the dependency on every request.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "market_relay.api.deps.require_scope",
+]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+strict = true
+warn_unused_ignores = true
+exclude = ["^alembic/"]
+
+[[tool.mypy.overrides]]
+module = "alembic.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["src/market_relay"]

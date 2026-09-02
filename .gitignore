@@ -1,0 +1,17 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Bases de datos SQLite locales (p. ej. market_relay.db del `database_url`
+# por defecto): artefactos de desarrollo, nunca del repositorio.
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

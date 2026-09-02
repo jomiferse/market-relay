@@ -1,0 +1,191 @@
+{
+  "$comment": "Reproducible fixture for the representative instrument matrix (openspec/changes/build-market-data-hub/tasks.md 3.1). Contains only public, factual identifiers (ISIN, ticker, MIC/venue) taken from public sources; it contains no credentials or personal data. 'figi' is deliberately left null: it SHALL be resolved at runtime via OpenFIGI's DiscoveryPort (see openfigi-evaluation.md) rather than being fixed here as a value unverified by this review.",
+  "review_date": "2026-09-02",
+  "instruments": [
+    {
+      "id": "sap-se-xetr",
+      "asset_class": "EQUITY",
+      "name": "SAP SE",
+      "isin": "DE0007164600",
+      "figi": null,
+      "mic": "XETR",
+      "venue": "Deutsche Börse Xetra",
+      "ticker": "SAP",
+      "currency": "EUR",
+      "raw_close_semantics": "Xetra closing-auction price published by Deutsche Börse; no dividend/split adjustment is applied to the retained 'close' value (specs/market-observations).",
+      "expected_historical_range": "Has traded on Xetra since well before the start of any candidate source evaluated; in practice the recoverable range depends on each source's historical depth (e.g. the Deutsche Börse Public Dataset PDS only covers from 2018 onward).",
+      "expected_missing_sessions": "Xetra weekends and holidays (FWB/Xetra calendar, e.g. Christmas, New Year, Good Friday); no session on 24 and 31 December in years when they fall on a weekday, per the calendar published by Deutsche Börse.",
+      "relevant_quotas": "See source_decisions.json: deutsche_boerse_public_dataset (commercial NO-GO), alpha_vantage_free (25 req/day), twelvedata_free (8 req/min, 800/day).",
+      "known_anomalies": [
+        "The Deutsche Börse PDS aggregates into 1-minute bars and does not directly publish an official EOD 'close': the close must be derived from the last bar of the session.",
+        "German equities can undergo splits or denomination changes (e.g. WKN changes); the raw close is not adjusted retroactively in the MVP."
+      ]
+    },
+    {
+      "id": "siemens-ag-xetr",
+      "asset_class": "EQUITY",
+      "name": "Siemens AG",
+      "isin": "DE0007236101",
+      "figi": null,
+      "mic": "XETR",
+      "venue": "Deutsche Börse Xetra",
+      "ticker": "SIE",
+      "currency": "EUR",
+      "raw_close_semantics": "Xetra closing-auction price; raw, unadjusted 'close'.",
+      "expected_historical_range": "Historical quotation predates any candidate source by a wide margin; the recoverable range is limited by each source, not by the instrument.",
+      "expected_missing_sessions": "Same Xetra holiday calendar as sap-se-xetr.",
+      "relevant_quotas": "See source_decisions.json: same candidate sources as sap-se-xetr.",
+      "known_anomalies": [
+        "Siemens has undergone historical corporate spin-offs (e.g. Siemens Energy, Siemens Healthineers) that are not reflected in the raw 'close' and are not adjusted for in the MVP (out of scope, see design.md § Risks/Trade-offs)."
+      ]
+    },
+    {
+      "id": "lvmh-xpar",
+      "asset_class": "EQUITY",
+      "name": "LVMH Moët Hennessy Louis Vuitton SE",
+      "isin": "FR0000121014",
+      "figi": null,
+      "mic": "XPAR",
+      "venue": "Euronext Paris",
+      "ticker": "MC",
+      "currency": "EUR",
+      "raw_close_semantics": "Euronext Paris official closing price (the 'closing price' from the closing-auction mechanism); raw, unadjusted 'close'.",
+      "expected_historical_range": "Historical quotation predates any candidate source evaluated by a wide margin.",
+      "expected_missing_sessions": "Weekends and holidays of the Euronext calendar (shared across XPAR/XAMS/XBRU/XLIS with occasional local variations).",
+      "relevant_quotas": "See source_decisions.json: euronext_eod_datashop (UNRESOLVED, requires an EMDA for redistribution).",
+      "known_anomalies": [
+        "Euronext operates several national markets (XPAR, XAMS, XBRU, XLIS) under one group but with slightly different local holiday calendars; do not assume a single Euronext calendar."
+      ]
+    },
+    {
+      "id": "asml-xams",
+      "asset_class": "EQUITY",
+      "name": "ASML Holding N.V.",
+      "isin": "NL0010273215",
+      "figi": null,
+      "mic": "XAMS",
+      "venue": "Euronext Amsterdam",
+      "ticker": "ASML",
+      "currency": "EUR",
+      "raw_close_semantics": "Euronext Amsterdam official closing price; raw, unadjusted 'close'.",
+      "expected_historical_range": "Historical quotation predates any candidate source evaluated by a wide margin.",
+      "expected_missing_sessions": "Euronext Amsterdam (XAMS) holiday calendar, which differs on specific dates from XPAR's.",
+      "relevant_quotas": "See source_decisions.json: euronext_eod_datashop (UNRESOLVED).",
+      "known_anomalies": [
+        "ASML also trades on Nasdaq (ADR/listing in USD); a provider identifier can confuse the EUR line on XAMS with the USD line on Nasdaq if not filtered by MIC and currency (see specs/instrument-catalog § 'Ambiguous EUR match')."
+      ]
+    },
+    {
+      "id": "ishares-core-msci-world-eur-xetr",
+      "asset_class": "ETF",
+      "name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "isin": "IE00B4L5Y983",
+      "figi": null,
+      "mic": "XETR",
+      "venue": "Deutsche Börse Xetra",
+      "ticker": "EUNL",
+      "currency": "EUR",
+      "raw_close_semantics": "Xetra closing price for the EUR quotation line of a UCITS ETF domiciled in Ireland; raw, unadjusted 'close'. Note: the quotation currency (EUR on Xetra) is independent of the fund's base currency (USD).",
+      "expected_historical_range": "The ETF was registered on 25/09/2009 per its own documents; the EUNL line on Xetra may have an admission date different from the fund's creation date.",
+      "expected_missing_sessions": "Xetra holiday calendar; additionally, an ETF may go untraded on a given day for lack of liquidity without that day being a holiday (a market-driven missing session, not a source-driven one).",
+      "relevant_quotas": "See source_decisions.json: same candidate sources as the Xetra equities.",
+      "known_anomalies": [
+        "The same ISIN (IE00B4L5Y983) trades under different tickers depending on the market (e.g. SWDA on the London Stock Exchange, EUNL on Xetra): specs/instrument-catalog § 'ISIN with multiple quotations' applies directly to this ISIN.",
+        "It is an accumulating (Acc) ETF: it does not distribute visible cash dividends, which can be mistaken for the absence of corporate events when comparing price series."
+      ]
+    },
+    {
+      "id": "vanguard-ftse-all-world-eur-xetr",
+      "asset_class": "ETF",
+      "name": "Vanguard FTSE All-World UCITS ETF USD (Acc)",
+      "isin": "IE00BK5BQT80",
+      "figi": null,
+      "mic": "XETR",
+      "venue": "Deutsche Börse Xetra",
+      "ticker": "VWCE",
+      "currency": "EUR",
+      "raw_close_semantics": "Xetra closing price for the EUR quotation line; raw, unadjusted 'close'.",
+      "expected_historical_range": "ETF launch date: 23/07/2019 per the issuer's documents; the actually recoverable range depends on the source.",
+      "expected_missing_sessions": "Xetra holiday calendar.",
+      "relevant_quotas": "See source_decisions.json: same candidate sources as the Xetra equities.",
+      "known_anomalies": [
+        "A physically replicating ETF with multiple quotation lines across different markets/currencies; requires explicit resolution by MIC+currency, same as ishares-core-msci-world-eur-xetr."
+      ]
+    },
+    {
+      "id": "amundi-funds-euro-corporate-bond-a-eur",
+      "asset_class": "FUND",
+      "name": "Amundi Funds Euro Corporate Bond - A EUR (sub-fund of the Amundi Funds SICAV)",
+      "isin": "LU0119099819",
+      "figi": null,
+      "mic": null,
+      "venue": "N/A (not exchange-listed; subscription/redemption at NAV through Amundi Luxembourg SA, the UCITS Management Company, domiciled in Luxembourg)",
+      "ticker": null,
+      "currency": "EUR",
+      "raw_close_semantics": "There is no market 'close': the relevant daily observation is the NAV (Net Asset Value) per share, treated as the raw EOD 'close' for this asset class (specs/operations § differentiated calendars; design.md § 'Different strategies by frequency').",
+      "expected_historical_range": "The sub-fund and share class (A) launched on 1 February 1999 per the official KIID in force as of 9 June 2022; the recoverable NAV history in practice depends on whether the management company publishes full series since launch or only a recent period.",
+      "expected_missing_sessions": "The KIID states that shares are subscribed/redeemed 'on any dealing day' per the prospectus; days that are not dealing days (Luxembourg holidays and the fund's own calendar) publish no NAV. The 'WAITING_FOR_PUBLICATION' status (specs/market-observations) applies while the day's NAV has not yet been published.",
+      "relevant_quotas": "No candidate source evaluated in this wave generically, freely, and with clear permissions covers the NAV of non-listed Amundi UCITS funds; see price-providers-evaluation.md. amundi.com itself publishes the 'latest net asset value' but was not evaluated as a third-party candidate source in this wave.",
+      "known_anomalies": [
+        "The sub-fund has several share classes with distinct ISINs for the same strategy (e.g. (A) LU0119099819 accumulating and (D) LU0119100179 distributing, per the KIID); resolve by the exact ISIN of the class, not just by the sub-fund's name.",
+        "No MIC or exchange ticker: the catalog must admit these fields as absent without fabricating them, the same way it already admits the absence of ISIN/MIC for crypto assets (specs/instrument-catalog § 'Crypto asset without ISIN or MIC')."
+      ]
+    },
+    {
+      "id": "amundi-funds-euro-government-bond-a-eur",
+      "asset_class": "FUND",
+      "name": "Amundi Funds Euro Government Bond - A EUR (sub-fund of the Amundi Funds SICAV)",
+      "isin": "LU0518421895",
+      "figi": null,
+      "mic": null,
+      "venue": "N/A (not exchange-listed; subscription/redemption at NAV through Amundi Luxembourg SA, the UCITS Management Company, domiciled in Luxembourg)",
+      "ticker": null,
+      "currency": "EUR",
+      "raw_close_semantics": "There is no market 'close': the relevant daily observation is the NAV (Net Asset Value) per share, treated as the raw EOD 'close' for this asset class (specs/operations § differentiated calendars; design.md § 'Different strategies by frequency').",
+      "expected_historical_range": "The sub-fund and share class (A) launched on 1 July 2010 per the official KIID in force as of 11 February 2022; the recoverable NAV history in practice depends on whether the management company publishes full series since launch or only a recent period.",
+      "expected_missing_sessions": "Same dealing-day pattern as amundi-funds-euro-corporate-bond-a-eur: days without a NAV coincide with Luxembourg holidays and the fund's own calendar, not with the calendar of any regulated market.",
+      "relevant_quotas": "Same candidate sources (or lack thereof) as amundi-funds-euro-corporate-bond-a-eur: none generically covers the NAV of this fund with clear permissions.",
+      "known_anomalies": [
+        "The sub-fund has several share classes with distinct ISINs (e.g. (A) LU0518421895 accumulating and (D) LU0518421978 distributing, per the KIID); resolve by the exact ISIN of the class.",
+        "No MIC or exchange ticker, the same optional-field pattern as amundi-funds-euro-corporate-bond-a-eur and as the crypto assets without ISIN/MIC."
+      ]
+    },
+    {
+      "id": "btc-eur-spot",
+      "asset_class": "CRYPTO",
+      "name": "Bitcoin / Euro",
+      "isin": null,
+      "figi": null,
+      "mic": null,
+      "venue": "Crypto spot market (e.g. Kraken, Bitstamp; the exact venue depends on the adapter and SHALL be recorded as provenance)",
+      "ticker": "BTC/EUR",
+      "currency": "EUR",
+      "raw_close_semantics": "No regulated market close: EOD 'close' is defined by MarketRelay's own convention as the last price of the UTC 24/7 session (e.g. 00:00 UTC), treated as raw with no adjustment (splits/dividends do not apply to crypto).",
+      "expected_historical_range": "Depends on the chosen venue; large centralized exchanges typically cover several years of BTC/EUR history.",
+      "expected_missing_sessions": "In theory none (24/7 market); in practice gaps can occur due to exchange maintenance or source outages, which SHALL be treated as a source-missing session, not a market-missing session (specs/market-data-ingestion).",
+      "relevant_quotas": "See source_decisions.json: coingecko_free_demo (redistribution NO-GO), kraken_public_rest_api (UNRESOLVED), bitstamp_public_rest_api (UNRESOLVED).",
+      "known_anomalies": [
+        "The BTC/EUR price can differ by several basis points between exchanges due to liquidity fragmentation: specs/market-observations § 'Two approved sources disagree' applies directly.",
+        "The definition of a 'daily UTC session' (e.g. cutoff at 00:00 UTC) is a MarketRelay convention, not a market standard; it must be documented and kept stable so as not to break historical series."
+      ]
+    },
+    {
+      "id": "eth-eur-spot",
+      "asset_class": "CRYPTO",
+      "name": "Ether / Euro",
+      "isin": null,
+      "figi": null,
+      "mic": null,
+      "venue": "Crypto spot market (e.g. Kraken, Bitstamp; the exact venue depends on the adapter and SHALL be recorded as provenance)",
+      "ticker": "ETH/EUR",
+      "currency": "EUR",
+      "raw_close_semantics": "Same UTC 24/7 'close' convention as btc-eur-spot.",
+      "expected_historical_range": "Depends on the venue; generally somewhat shorter than BTC/EUR since it is a younger asset.",
+      "expected_missing_sessions": "Same as btc-eur-spot: in theory none, in practice gaps due to source incidents.",
+      "relevant_quotas": "Same as btc-eur-spot.",
+      "known_anomalies": [
+        "Network events (e.g. hard forks, consensus-mechanism changes) can produce anomalous price movements that are not source errors; distinguishing them from corrupted data requires context outside the scope of this service."
+      ]
+    }
+  ]
+}
